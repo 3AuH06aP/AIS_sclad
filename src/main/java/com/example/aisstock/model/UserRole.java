@@ -2,5 +2,6 @@ package com.example.aisstock.model;
 
 public enum UserRole {
     ADMIN,
-    USER
+    STOREKEEPER,
+    USER // Added back to support legacy data in DB
 }

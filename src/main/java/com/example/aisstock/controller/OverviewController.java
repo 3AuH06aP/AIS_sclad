@@ -1,11 +1,13 @@
 package com.example.aisstock.controller;
 
+import com.example.aisstock.model.StockItem;
 import com.example.aisstock.repository.ProductRepository;
 import com.example.aisstock.repository.StockItemRepository;
 import com.example.aisstock.repository.WarehouseRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -25,7 +27,10 @@ public class OverviewController {
     @GetMapping("/api/overview")
     public Map<String, Object> overview() {
         long lowStockCount = stockItemRepository.findAll().stream()
-                .filter(item -> item.getQuantity() <= 10)
+                .filter(item -> {
+                    Integer min = item.getProduct().getMinQuantity();
+                    return item.getQuantity() <= (min != null ? min : 0);
+                })
                 .count();
 
         return Map.of(

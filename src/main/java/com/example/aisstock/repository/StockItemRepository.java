@@ -4,6 +4,8 @@ import com.example.aisstock.model.StockItem;
 import com.example.aisstock.model.Product;
 import com.example.aisstock.model.Warehouse;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 import java.util.List;
 
@@ -12,4 +14,16 @@ public interface StockItemRepository extends JpaRepository<StockItem, Long> {
     Optional<StockItem> findByProductAndWarehouseAndStorageLocation(Product product, Warehouse warehouse, String storageLocation);
     List<StockItem> findByWarehouse(Warehouse warehouse);
     List<StockItem> findByProduct(Product product);
+
+    @Query("SELECT s FROM StockItem s WHERE s.product.id = :productId AND s.warehouse.id = :warehouseId " +
+           "AND ((:storageLocation IS NULL AND s.storageLocation IS NULL) OR (s.storageLocation = :storageLocation)) " +
+           "AND ((:batch IS NULL AND s.batch IS NULL) OR (s.batch = :batch))")
+    Optional<StockItem> findStockItemRobust(
+            @Param("productId") Long productId,
+            @Param("warehouseId") Long warehouseId,
+            @Param("storageLocation") String storageLocation,
+            @Param("batch") String batch);
+
+    // Added to prevent uk11skwywuw9ltvq7s2e1ogltu6 constraint violation if it only covers product/warehouse
+    Optional<StockItem> findByProductIdAndWarehouseId(Long productId, Long warehouseId);
 }

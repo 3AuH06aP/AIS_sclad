@@ -5,10 +5,11 @@
       <nav>
         <router-link to="/">Панель</router-link>
         <router-link to="/products">Товары</router-link>
+        <router-link to="/documents">Документы</router-link>
+        <router-link to="/reports">Остатки</router-link>
+        <router-link to="/reports/movements">Движения</router-link>
         <router-link to="/tasks">Задачи</router-link>
-        <router-link v-if="auth.role === 'admin'" to="/admin">Админка</router-link>
-        <router-link v-if="auth.role === 'admin'" to="/admin/users">Пользователи</router-link>
-        <router-link v-if="auth.role === 'admin'" to="/admin/logs">Журнал</router-link>
+        <router-link v-if="auth.role === 'admin'" to="/admin">Администрирование</router-link>
       </nav>
       <div class="sidebar-footer">
         <button class="ghost" @click="logout">Выйти</button>
@@ -55,10 +56,11 @@ function logout() {
 .brand {
   font-size: 1.4rem;
   font-weight: 800;
+  margin-bottom: 10px;
 }
 nav {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 a {
   color: #cbd5e1;
@@ -66,10 +68,12 @@ a {
   padding: 12px 14px;
   border-radius: 12px;
   display: block;
+  font-weight: 500;
+  transition: all 0.2s;
 }
 a.router-link-active,
 a:hover {
-  background: #1f2937;
+  background: #1e293b;
   color: white;
 }
 .sidebar-footer {
@@ -79,21 +83,26 @@ button.ghost {
   width: 100%;
   padding: 12px 14px;
   background: transparent;
-  border: 1px solid #475569;
+  border: 1px solid #334155;
   border-radius: 12px;
   color: #e2e8f0;
   cursor: pointer;
+  font-weight: 600;
+}
+button.ghost:hover {
+  background: #1e293b;
 }
 .content-area {
   background: #f8fafc;
-  padding: 24px;
+  padding: 32px;
 }
 .topbar {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 .page-title {
-  font-size: 1.4rem;
-  font-weight: 700;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #0f172a;
 }
 .page-body {
   display: flex;
@@ -106,15 +115,7 @@ button.ghost {
   }
   .sidebar {
     flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-  }
-  nav {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    padding: 16px;
   }
 }
 </style>

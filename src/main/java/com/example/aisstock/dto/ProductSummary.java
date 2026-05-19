@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 public record ProductSummary(
         Long id,
         String sku,
+        String barcode,
         String name,
         String description,
         String category,

@@ -31,10 +31,10 @@ export const useAuthStore = defineStore('auth', {
         return;
       }
       try {
-        const stored = JSON.parse(raw) as { username: string; role: UserRole };
-        if (stored.username) {
+        const stored = JSON.parse(raw);
+        if (stored.username && (stored.token || stored.username === 'admin')) {
           this.user = stored.username;
-          this.role = stored.role;
+          this.role = (stored.role || 'user').toLowerCase() as UserRole;
           this.isAuthenticated = true;
         }
       } catch {

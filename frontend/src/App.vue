@@ -1,10 +1,13 @@
 <template>
   <div id="app">
     <RouterView />
+    <AppNotification />
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import AppNotification from './components/AppNotification.vue';
+</script>
 
 <style>
 #app {

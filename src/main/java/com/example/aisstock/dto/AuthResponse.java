@@ -4,6 +4,7 @@ public class AuthResponse {
     private Long id;
     private String username;
     private String role;
+    private String token;
 
     public AuthResponse() {
     }
@@ -12,6 +13,14 @@ public class AuthResponse {
         this.id = id;
         this.username = username;
         this.role = role;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public Long getId() {

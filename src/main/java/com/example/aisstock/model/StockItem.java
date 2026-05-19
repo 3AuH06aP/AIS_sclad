@@ -5,11 +5,12 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 @Table(name = "stock_items", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"product_id", "warehouse_id", "storage_location"})
+        @UniqueConstraint(columnNames = {"product_id", "warehouse_id", "storage_location", "batch"})
 })
 public class StockItem {
     @Id
@@ -33,6 +34,11 @@ public class StockItem {
 
     @Size(max = 64)
     private String storageLocation;
+
+    @Size(max = 64)
+    private String batch;
+
+    private LocalDate expirationDate;
 
     public Long getId() {
         return id;
@@ -72,5 +78,21 @@ public class StockItem {
 
     public void setStorageLocation(String storageLocation) {
         this.storageLocation = storageLocation;
+    }
+
+    public String getBatch() {
+        return batch;
+    }
+
+    public void setBatch(String batch) {
+        this.batch = batch;
+    }
+
+    public LocalDate getExpirationDate() {
+        return expirationDate;
+    }
+
+    public void setExpirationDate(LocalDate expirationDate) {
+        this.expirationDate = expirationDate;
     }
 }

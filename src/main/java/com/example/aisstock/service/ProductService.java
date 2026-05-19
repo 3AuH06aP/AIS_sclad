@@ -32,6 +32,7 @@ public class ProductService {
             return new ProductSummary(
                     product.getId(),
                     product.getSku(),
+                    product.getBarcode(),
                     product.getName(),
                     product.getDescription(),
                     product.getCategory(),

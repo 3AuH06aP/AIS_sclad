@@ -31,13 +31,31 @@
             </div>
           </div>
 
-          <div class="panel-card">
+          <div class="panel-card next-steps">
             <h3>Что дальше</h3>
-            <ul>
-              <li>Перейдите к списку товаров</li>
-              <li>Добавьте новые позиции товаров</li>
-              <li>Добавьте складские перемещения и приемку</li>
-            </ul>
+            <div class="step-links">
+              <router-link to="/products" class="step-card">
+                <span class="step-icon">📦</span>
+                <div class="step-text">
+                  <h4>Список товаров</h4>
+                  <p>Управление номенклатурой и штрихкодами</p>
+                </div>
+              </router-link>
+              <router-link to="/documents" class="step-card">
+                <span class="step-icon">📑</span>
+                <div class="step-text">
+                  <h4>Складские документы</h4>
+                  <p>Приёмка, отгрузка и перемещения</p>
+                </div>
+              </router-link>
+              <router-link to="/tasks" class="step-card">
+                <span class="step-icon">✅</span>
+                <div class="step-text">
+                  <h4>Текущие задачи</h4>
+                  <p>Выполнение заданий на отбор и размещение</p>
+                </div>
+              </router-link>
+            </div>
           </div>
         </section>
       </template>
@@ -53,14 +71,12 @@ import { ref, onMounted } from 'vue';
 
 const auth = useAuthStore();
 const overview = ref({ products: 0, warehouses: 0, stockItems: 0, lowStockItems: 0 });
-const error = ref('');
 
 async function loadOverview() {
-  error.value = '';
   try {
     overview.value = await fetchOverview();
   } catch {
-    error.value = 'Не удалось загрузить ключевые показатели.';
+    console.error('Failed to load overview');
   }
 }
 
@@ -68,48 +84,38 @@ onMounted(loadOverview);
 </script>
 
 <style scoped>
-.page {
-  padding: 24px;
-}
-.dashboard-panel {
-  display: grid;
-  gap: 20px;
-}
+.dashboard-panel { display: flex; flex-direction: column; gap: 20px; }
 .panel-card {
   background: #ffffff;
   border-radius: 18px;
   padding: 24px;
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
 }
-.welcome-card p {
-  margin: 0;
-  color: #475569;
-}
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.welcome-card h2 { margin: 0 0 8px 0; font-size: 1.6rem; }
+.welcome-card p { margin: 0; color: #64748b; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 16px; }
+.stat-item { padding: 24px; border-radius: 16px; background: #f8fafc; }
+.stat-value { display: block; font-size: 2.2rem; font-weight: 800; color: #0f172a; }
+.stat-label { color: #64748b; font-weight: 500; }
+.low-stock { background: #fff7ed; }
+.low-stock .stat-value { color: #ea580c; }
+
+.step-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; }
+.step-card {
+  display: flex;
+  align-items: center;
   gap: 16px;
-  margin-top: 16px;
-}
-.stat-item {
-  padding: 18px;
-  border-radius: 16px;
+  padding: 16px;
   background: #f8fafc;
+  border-radius: 14px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s;
+  border: 1px solid transparent;
 }
-.stat-value {
-  display: block;
-  font-size: 28px;
-  font-weight: 700;
-  color: #0f172a;
-}
-.stat-label {
-  color: #64748b;
-}
-.low-stock {
-  background: #ffedd5;
-}
-h2,
-h3 {
-  margin-top: 0;
-}
+.step-card:hover { background: white; border-color: #e2e8f0; transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.05); }
+.step-icon { font-size: 1.8rem; background: white; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 10px; }
+.step-text h4 { margin: 0 0 4px 0; color: #1e293b; }
+.step-text p { margin: 0; font-size: 0.85rem; color: #64748b; }
 </style>

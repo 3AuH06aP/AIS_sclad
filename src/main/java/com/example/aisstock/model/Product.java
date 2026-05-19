@@ -20,6 +20,9 @@ public class Product {
     @Column(nullable = false, unique = true)
     private String sku;
 
+    @Size(max = 64)
+    private String barcode;
+
     @NotBlank
     @Size(max = 128)
     @Column(nullable = false)
@@ -49,6 +52,13 @@ public class Product {
     @Size(max = 512)
     private String description;
 
+    public Product() {
+    }
+
+    public Product(Long id) {
+        this.id = id;
+    }
+
     public Long getId() {
         return id;
     }
@@ -63,6 +73,14 @@ public class Product {
 
     public void setSku(String sku) {
         this.sku = sku;
+    }
+
+    public String getBarcode() {
+        return barcode;
+    }
+
+    public void setBarcode(String barcode) {
+        this.barcode = barcode;
     }
 
     public String getName() {

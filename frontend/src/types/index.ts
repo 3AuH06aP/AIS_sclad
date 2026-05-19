@@ -33,6 +33,42 @@ export interface StockItem {
   warehouse: Warehouse;
   quantity: number;
   storageLocation?: string;
+  batch?: string;
+  expirationDate?: string;
+}
+
+export interface SerialNumber {
+  id: number;
+  serialNumber: string;
+  product: Product;
+  stockItem?: StockItem;
+  status?: string;
+}
+
+export interface DocumentItem {
+  id: number;
+  document?: Document;
+  product: Product;
+  quantity: number;
+  batch?: string;
+  storageLocation?: string;
+  unitPrice?: number;
+  notes?: string;
+  serialNumbers?: string;
+}
+
+export interface Document {
+  id: number;
+  documentType: 'RECEIPT' | 'SHIPMENT' | 'TRANSFER' | 'WRITE_OFF';
+  documentNumber?: string;
+  reference?: string;
+  warehouseFrom?: Warehouse;
+  warehouseTo?: Warehouse;
+  createdBy?: string;
+  createdAt?: string;
+  notes?: string;
+  status: 'DRAFT' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+  items: DocumentItem[];
 }
 
 export interface StockItemCreateRequest {
@@ -49,6 +85,21 @@ export interface StockTransactionRequest {
   storageLocation?: string;
   reference?: string;
   notes?: string;
+}
+
+export interface Task {
+  id: number;
+  taskType: 'PUTAWAY' | 'PICKING';
+  product: Product;
+  quantity: number;
+  warehouse?: Warehouse;
+  storageLocation?: string;
+  batch?: string;
+  assignedTo?: string;
+  notes?: string;
+  createdAt?: string;
+  completedAt?: string;
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 }
 
 export interface StockTransaction {

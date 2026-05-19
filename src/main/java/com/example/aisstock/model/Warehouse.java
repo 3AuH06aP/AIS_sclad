@@ -21,6 +21,13 @@ public class Warehouse {
     @Size(max = 256)
     private String location;
 
+    public Warehouse() {
+    }
+
+    public Warehouse(Long id) {
+        this.id = id;
+    }
+
     public Long getId() {
         return id;
     }

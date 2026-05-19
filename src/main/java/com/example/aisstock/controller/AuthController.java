@@ -22,30 +22,24 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-        if (request.getUsername() == null || request.getPassword() == null) {
-            return ResponseEntity.badRequest().build();
+        // Simple plain-text login without Spring Security AuthenticationManager
+        return userService.findByUsername(request.getUsername())
+                .filter(user -> user.getPassword().equals(request.getPassword()))
+                .map(user -> {
+                    activityLogService.log(user.getUsername(), "login_success", "User logged in (Security Disabled)");
+                    AuthResponse response = new AuthResponse(user.getId(), user.getUsername(), user.getRole().name().toLowerCase());
+                    response.setToken("debug-token-security-disabled"); // Return a dummy token
+                    return ResponseEntity.ok(response);
+                })
+                .orElse(ResponseEntity.status(401).build());
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<User> register(@RequestBody User user) {
+        if (user.getRole() == null) {
+            user.setRole(UserRole.STOREKEEPER);
         }
-
-        String username = request.getUsername().trim();
-        String password = request.getPassword();
-
-        var existingUser = userService.findByUsername(username);
-        if (existingUser.isPresent()) {
-            User user = existingUser.get();
-            if (!user.getPassword().equals(password)) {
-                activityLogService.log(username, "login_failed", "Failed login attempt");
-                return ResponseEntity.status(401).build();
-            }
-            activityLogService.log(username, "login_success", "User logged in");
-            return ResponseEntity.ok(new AuthResponse(user.getId(), user.getUsername(), user.getRole().name().toLowerCase()));
-        }
-
-        User newUser = new User();
-        newUser.setUsername(username);
-        newUser.setPassword(password);
-        newUser.setRole(UserRole.USER);
-        User saved = userService.createUser(newUser);
-        activityLogService.log(username, "login_register", "Created new user via login");
-        return ResponseEntity.ok(new AuthResponse(saved.getId(), saved.getUsername(), saved.getRole().name().toLowerCase()));
+        activityLogService.log("system", "register", "New user registered: " + user.getUsername());
+        return ResponseEntity.ok(userService.createUser(user));
     }
 }

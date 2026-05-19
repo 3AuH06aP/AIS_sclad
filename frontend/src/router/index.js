@@ -3,10 +3,16 @@ import { useAuthStore } from '../stores/auth';
 import LoginView from '../features/auth/LoginView.vue';
 import DashboardView from '../features/dashboard/DashboardView.vue';
 import ProductListView from '../features/products/ProductListView.vue';
+import DocumentListView from '../features/documents/DocumentListView.vue';
+import DocumentCreateView from '../features/documents/DocumentCreateView.vue';
+import DocumentCardView from '../features/documents/DocumentCardView.vue';
+import StockReportView from '../features/reports/StockReportView.vue';
+import MovementsReportView from '../features/reports/MovementsReportView.vue';
 import TaskView from '../features/tasks/TaskView.vue';
 import AdminDashboardView from '../features/admin/AdminDashboardView.vue';
 import AdminUsersView from '../features/admin/AdminUsersView.vue';
 import AdminActivityView from '../features/admin/AdminActivityView.vue';
+
 const routes = [
     { path: '/login', component: LoginView },
     {
@@ -17,6 +23,31 @@ const routes = [
     {
         path: '/products',
         component: ProductListView,
+        meta: { auth: true }
+    },
+    {
+        path: '/documents',
+        component: DocumentListView,
+        meta: { auth: true }
+    },
+    {
+        path: '/documents/create/:type',
+        component: DocumentCreateView,
+        meta: { auth: true }
+    },
+    {
+        path: '/documents/:id',
+        component: DocumentCardView,
+        meta: { auth: true }
+    },
+    {
+        path: '/reports',
+        component: StockReportView,
+        meta: { auth: true }
+    },
+    {
+        path: '/reports/movements',
+        component: MovementsReportView,
         meta: { auth: true }
     },
     {
@@ -44,14 +75,17 @@ const routes = [
         redirect: '/'
     }
 ];
+
 const router = createRouter({
     history: createWebHistory(),
     routes
 });
+
 router.beforeEach((to, from, next) => {
     const auth = useAuthStore();
     const requiresAuth = to.meta.auth === true;
     const requiresAdmin = to.meta.admin === true;
+
     if (requiresAuth && !auth.isAuthenticated) {
         next('/login');
     }
@@ -62,5 +96,6 @@ router.beforeEach((to, from, next) => {
         next();
     }
 });
+
 export default router;
 //# sourceMappingURL=index.js.map

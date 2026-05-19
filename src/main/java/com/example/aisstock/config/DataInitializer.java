@@ -12,11 +12,13 @@ import com.example.aisstock.service.UserService;
 import jakarta.transaction.Transactional;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
 @Component
+@Order(1)
 public class DataInitializer implements ApplicationRunner {
     private final ProductRepository productRepository;
     private final WarehouseRepository warehouseRepository;
@@ -36,9 +38,12 @@ public class DataInitializer implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        if (userService.findAll().isEmpty()) {
+        // Simple initialization without password re-hashing
+        if (userService.findByUsername("admin").isEmpty()) {
             createUser("admin", "admin", UserRole.ADMIN);
-            createUser("manager", "manager", UserRole.USER);
+        }
+        if (userService.findByUsername("keeper").isEmpty()) {
+            createUser("keeper", "keeper", UserRole.STOREKEEPER);
         }
 
         if (productRepository.count() == 0 && warehouseRepository.count() == 0) {
@@ -57,13 +62,11 @@ public class DataInitializer implements ApplicationRunner {
     }
 
     private void createUser(String username, String password, UserRole role) {
-        if (userService.findByUsername(username).isEmpty()) {
-            User user = new User();
-            user.setUsername(username);
-            user.setPassword(password);
-            user.setRole(role);
-            userService.createUser(user);
-        }
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(password); // Will be saved as plain text
+        user.setRole(role);
+        userService.saveDirectly(user);
     }
 
     private Warehouse createWarehouse(String name, String location) {

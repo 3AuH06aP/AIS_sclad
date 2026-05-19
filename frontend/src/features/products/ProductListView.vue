@@ -4,9 +4,11 @@
       <template #title>Товары</template>
       <template #content>
         <section class="toolbar">
-          <input v-model="filter" placeholder="Поиск по названию, артикулу, категории" />
+          <input v-model="filter" placeholder="Поиск по названию, артикулу, штрихкоду" />
           <button @click="refresh" class="primary">Обновить</button>
           <button @click="showCreate = true" class="secondary">Добавить товар</button>
+          <button @click="$refs.fileInput.click()" class="ghost">Импорт Excel</button>
+          <input type="file" ref="fileInput" style="display: none" @change="handleFileUpload" accept=".xlsx, .xls" />
         </section>
 
         <section v-if="showCreate" class="modal-overlay" @click.self="closeCreate">
@@ -16,6 +18,10 @@
               <label>
                 Артикул
                 <input v-model="newProduct.sku" placeholder="Введите SKU" />
+              </label>
+              <label>
+                Штрихкод
+                <input v-model="newProduct.barcode" placeholder="Штрихкод" />
               </label>
               <label>
                 Название
@@ -84,11 +90,11 @@
             <thead>
               <tr>
                 <th>Артикул</th>
+                <th>Штрихкод</th>
                 <th>Название</th>
                 <th>Категория</th>
                 <th>Класс</th>
                 <th>Метод</th>
-                <th>Описание</th>
                 <th>Остаток</th>
                 <th>Мин. остаток</th>
                 <th>Ед.</th>
@@ -97,11 +103,11 @@
             <tbody>
               <tr v-for="product in filteredProducts" :key="product.id">
                 <td>{{ product.sku }}</td>
+                <td>{{ product.barcode || '—' }}</td>
                 <td>{{ product.name }}</td>
                 <td>{{ product.category }}</td>
                 <td>{{ product.inventoryClass || '—' }}</td>
                 <td>{{ product.trackingMethod || '—' }}</td>
-                <td>{{ product.description || '—' }}</td>
                 <td>{{ product.quantity }}</td>
                 <td>{{ product.minQuantity }}</td>
                 <td>{{ product.unit }}</td>
@@ -120,7 +126,7 @@
 <script setup lang="ts">
 import MainLayout from '../../layouts/MainLayout.vue';
 import { ref, computed, onMounted } from 'vue';
-import { fetchProducts, createProduct } from '../../api/products';
+import { fetchProducts, createProduct, importProductsExcel } from '../../api/products';
 import type { Product } from '../../types';
 
 const products = ref([] as Product[]);
@@ -129,9 +135,12 @@ const loading = ref(false);
 const error = ref('');
 const showCreate = ref(false);
 const message = ref('');
+const fileInput = ref<HTMLInputElement | null>(null);
+
 const newProduct = ref<Product>({
   id: 0,
   sku: '',
+  barcode: '',
   name: '',
   description: '',
   category: '',
@@ -176,10 +185,30 @@ async function load() {
   }
 }
 
+async function handleFileUpload(event: Event) {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) {
+    loading.value = true;
+    error.value = '';
+    message.value = '';
+    try {
+      await importProductsExcel(target.files[0]);
+      message.value = 'Товары успешно импортированы';
+      await load();
+    } catch (err) {
+      error.value = 'Ошибка при импорте файла. Проверьте формат.';
+    } finally {
+      loading.value = false;
+      if (fileInput.value) fileInput.value.value = '';
+    }
+  }
+}
+
 function resetNewProduct() {
   newProduct.value = {
     id: 0,
     sku: '',
+    barcode: '',
     name: '',
     description: '',
     category: '',
@@ -237,6 +266,7 @@ const filteredProducts = computed(() => {
     return (
       item.name.toLowerCase().includes(query) ||
       item.sku.toLowerCase().includes(query) ||
+      (item.barcode && item.barcode.toLowerCase().includes(query)) ||
       item.category?.toLowerCase().includes(query) ||
       item.description?.toLowerCase().includes(query)
     );
@@ -278,31 +308,6 @@ button.secondary {
 }
 button.secondary:hover {
   background: #1e40af;
-}
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  z-index: 50;
-}
-.modal-card {
-  width: min(720px, 100%);
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 28px;
-  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18);
-}
-.modal-card h2 {
-  margin-top: 0;
-}
-.modal-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 18px;
 }
 button.ghost {
   padding: 12px 18px;
@@ -384,10 +389,14 @@ th {
   font-weight: 700;
 }
 .empty-state,
+.message,
 .error {
   padding: 24px;
   text-align: center;
   color: #475569;
+}
+.success {
+  color: #16a34a;
 }
 .error {
   color: #b91c1c;
