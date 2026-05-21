@@ -11,6 +11,7 @@ import java.util.List;
 
 public interface StockItemRepository extends JpaRepository<StockItem, Long> {
     Optional<StockItem> findByProductAndWarehouse(Product product, Warehouse warehouse);
+    Optional<StockItem> findByProductIdAndWarehouseId(Long productId, Long warehouseId);
     Optional<StockItem> findByProductAndWarehouseAndStorageLocation(Product product, Warehouse warehouse, String storageLocation);
     List<StockItem> findByWarehouse(Warehouse warehouse);
     List<StockItem> findByProduct(Product product);
@@ -24,6 +25,6 @@ public interface StockItemRepository extends JpaRepository<StockItem, Long> {
             @Param("storageLocation") String storageLocation,
             @Param("batch") String batch);
 
-    // Added to prevent uk11skwywuw9ltvq7s2e1ogltu6 constraint violation if it only covers product/warehouse
-    Optional<StockItem> findByProductIdAndWarehouseId(Long productId, Long warehouseId);
+    @Query("SELECT COALESCE(SUM(s.quantity), 0) FROM StockItem s")
+    Long sumTotalQuantity();
 }

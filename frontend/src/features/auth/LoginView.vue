@@ -23,7 +23,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { isAxiosError } from 'axios';
 import { useAuthStore } from '../../stores/auth';
+import { getApiErrorMessage } from '../../utils/apiError';
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -36,7 +38,13 @@ async function submit() {
     await auth.login(username.value.trim(), password.value.trim());
     router.push(auth.role === 'admin' ? '/admin' : '/');
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Ошибка входа';
+    if (isAxiosError(err) && err.response?.status === 403) {
+      error.value = 'Учётная запись заблокирована. Обратитесь к администратору.';
+    } else if (isAxiosError(err) && err.response?.status === 401) {
+      error.value = 'Неверный логин или пароль';
+    } else {
+      error.value = getApiErrorMessage(err, 'Ошибка входа');
+    }
   }
 }
 </script>

@@ -3,6 +3,7 @@ import { useAuthStore } from '../stores/auth';
 import LoginView from '../features/auth/LoginView.vue';
 import DashboardView from '../features/dashboard/DashboardView.vue';
 import ProductListView from '../features/products/ProductListView.vue';
+import ProductDetailView from '../features/products/ProductDetailView.vue';
 import DocumentListView from '../features/documents/DocumentListView.vue';
 import DocumentCreateView from '../features/documents/DocumentCreateView.vue';
 import DocumentCardView from '../features/documents/DocumentCardView.vue';
@@ -24,6 +25,12 @@ const routes = [
         path: '/products',
         component: ProductListView,
         meta: { auth: true }
+    },
+    {
+        path: '/products/:id',
+        component: ProductDetailView,
+        meta: { auth: true },
+        props: true
     },
     {
         path: '/documents',

@@ -1,9 +1,14 @@
-export type UserRole = 'admin' | 'user';
+export type UserRole = 'admin' | 'storekeeper' | 'user';
+
+/** API returns admin | user (кладовщик = user). */
+export type ApiUserRole = 'admin' | 'user';
 
 export interface User {
   id: number;
   username: string;
-  role: UserRole;
+  role: ApiUserRole;
+  createdAt?: string | null;
+  enabled: boolean;
 }
 
 export interface Product {
@@ -119,5 +124,6 @@ export interface ActivityLog {
   username: string;
   action: string;
   details?: string;
+  targetUsername?: string | null;
   createdAt: string;
 }

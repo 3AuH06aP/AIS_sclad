@@ -66,6 +66,11 @@ public class DataInitializer implements ApplicationRunner {
         user.setUsername(username);
         user.setPassword(password); // Will be saved as plain text
         user.setRole(role);
+        if ("admin".equals(username)) {
+            user.setFullName("Иван Иванов");
+        } else if ("keeper".equals(username)) {
+            user.setFullName("Пётр Кладовщиков");
+        }
         userService.saveDirectly(user);
     }
 

@@ -1,34 +1,54 @@
 <template>
   <div class="page">
     <main-layout>
-      <template #title>Журнал активности</template>
+      <template #title>Журнал действий администратора</template>
       <template #content>
         <section class="admin-logs">
           <div class="table-card">
             <div class="card-header">
-              <h2>Аудит действий</h2>
-              <button @click="loadLogs" class="btn btn-secondary">Обновить</button>
+              <h2>Аудит администрирования</h2>
+              <button type="button" class="btn btn-secondary" @click="loadLogs">Обновить</button>
             </div>
 
-            <table class="table">
+            <div class="filters">
+              <label class="filter-label">
+                Администратор
+                <input v-model="filters.admin" type="text" placeholder="Логин" class="input" />
+              </label>
+              <label class="filter-label">
+                С
+                <input v-model="filters.from" type="date" class="input" />
+              </label>
+              <label class="filter-label">
+                По
+                <input v-model="filters.to" type="date" class="input" />
+              </label>
+              <button type="button" class="btn btn-primary" @click="loadLogs">Применить</button>
+              <button type="button" class="btn btn-ghost" @click="clearFilters">Сбросить</button>
+            </div>
+
+            <div v-if="loading" class="empty-state">Загрузка...</div>
+            <table v-else class="table">
               <thead>
                 <tr>
-                  <th>Время</th>
-                  <th>Пользователь</th>
+                  <th>Дата</th>
+                  <th>Администратор</th>
                   <th>Действие</th>
-                  <th>Подробности</th>
+                  <th>Целевой пользователь</th>
+                  <th>Детали</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="log in logs" :key="log.id">
                   <td class="time-col">{{ formatDate(log.createdAt) }}</td>
-                  <td class="user-col">👤 {{ log.username }}</td>
-                  <td><span class="action-tag">{{ log.action }}</span></td>
+                  <td class="user-col">{{ log.username }}</td>
+                  <td><span class="action-tag">{{ actionLabel(log.action) }}</span></td>
+                  <td>{{ log.targetUsername || '—' }}</td>
                   <td class="details-col">{{ log.details || '—' }}</td>
                 </tr>
               </tbody>
             </table>
-            <div v-if="logs.length === 0" class="empty-state">Записей нет</div>
+            <div v-if="!loading && logs.length === 0" class="empty-state">Записей нет</div>
           </div>
         </section>
       </template>
@@ -39,23 +59,51 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import MainLayout from '../../layouts/MainLayout.vue';
-import { fetchLogs } from '../../api/logs';
+import { fetchAdminLogs, ADMIN_ACTION_LABELS } from '../../api/logs';
 import type { ActivityLog } from '../../types';
 
 const logs = ref<ActivityLog[]>([]);
+const loading = ref(false);
+const filters = ref({
+  admin: '',
+  from: '',
+  to: ''
+});
 
-async function loadLogs() {
-  try {
-    logs.value = await fetchLogs();
-  } catch {
-    console.error('Failed to load logs');
-  }
+function actionLabel(action: string) {
+  return ADMIN_ACTION_LABELS[action] || action;
 }
 
 function formatDate(value: string) {
-  return new Date(value).toLocaleString('ru-RU', {
-    day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+  if (!value) return '—';
+  const normalized = value.includes('T') ? value : value.replace(' ', 'T');
+  return new Date(normalized).toLocaleString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
   });
+}
+
+function clearFilters() {
+  filters.value = { admin: '', from: '', to: '' };
+  loadLogs();
+}
+
+async function loadLogs() {
+  loading.value = true;
+  try {
+    logs.value = await fetchAdminLogs({
+      admin: filters.value.admin || undefined,
+      from: filters.value.from || undefined,
+      to: filters.value.to || undefined
+    });
+  } catch {
+    logs.value = [];
+  } finally {
+    loading.value = false;
+  }
 }
 
 onMounted(loadLogs);
@@ -68,20 +116,97 @@ onMounted(loadLogs);
   padding: 24px;
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
 }
-.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.card-header h2 { margin: 0; }
-
-.table { width: 100%; border-collapse: collapse; }
-th { text-align: left; padding: 14px; color: #64748b; border-bottom: 1px solid #e2e8f0; }
-td { padding: 14px; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; }
-
-.time-col { color: #94a3b8; white-space: nowrap; }
-.user-col { font-weight: 600; color: #1e293b; }
-.action-tag { background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-family: monospace; font-size: 0.85rem; }
-.details-col { color: #475569; }
-
-.btn { padding: 8px 16px; border-radius: 10px; border: none; cursor: pointer; font-weight: 600; }
-.btn-secondary { background: #f1f5f9; color: #475569; }
-
-.empty-state { text-align: center; padding: 40px; color: #64748b; }
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.card-header h2 {
+  margin: 0;
+}
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+.filter-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+}
+.input {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  min-width: 160px;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th {
+  text-align: left;
+  padding: 14px;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.85rem;
+}
+td {
+  padding: 14px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.95rem;
+}
+.time-col {
+  color: #64748b;
+  white-space: nowrap;
+}
+.user-col {
+  font-weight: 600;
+  color: #1e293b;
+}
+.action-tag {
+  background: #f1f5f9;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.details-col {
+  color: #475569;
+  max-width: 280px;
+}
+.btn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-primary {
+  background: #2563eb;
+  color: white;
+}
+.btn-secondary {
+  background: #f1f5f9;
+  color: #475569;
+}
+.btn-ghost {
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+}
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #64748b;
+}
 </style>

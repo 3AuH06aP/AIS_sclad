@@ -22,16 +22,20 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-        // Simple plain-text login without Spring Security AuthenticationManager
         return userService.findByUsername(request.getUsername())
-                .filter(user -> user.getPassword().equals(request.getPassword()))
-                .map(user -> {
+                .filter(user -> !user.isEnabled())
+                .map(user -> ResponseEntity.status(403).<AuthResponse>build())
+                .orElseGet(() -> userService.verifyPlainPasswordAndTouchLogin(request.getUsername(), request.getPassword())
+                .map(result -> {
+                    var user = result.user();
                     activityLogService.log(user.getUsername(), "login_success", "User logged in (Security Disabled)");
                     AuthResponse response = new AuthResponse(user.getId(), user.getUsername(), user.getRole().name().toLowerCase());
-                    response.setToken("debug-token-security-disabled"); // Return a dummy token
+                    response.setToken("debug-token-security-disabled");
+                    response.setFullName(user.getFullName());
+                    response.setLastLoginAt(result.previousLoginAt());
                     return ResponseEntity.ok(response);
                 })
-                .orElse(ResponseEntity.status(401).build());
+                .orElse(ResponseEntity.status(401).build()));
     }
 
     @PostMapping("/register")

@@ -21,6 +21,9 @@ public class ActivityLog {
     @Column(length = 1024)
     private String details;
 
+    @Column(length = 64)
+    private String targetUsername;
+
     @Column(nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
@@ -60,6 +63,14 @@ public class ActivityLog {
 
     public void setDetails(String details) {
         this.details = details;
+    }
+
+    public String getTargetUsername() {
+        return targetUsername;
+    }
+
+    public void setTargetUsername(String targetUsername) {
+        this.targetUsername = targetUsername;
     }
 
     public LocalDateTime getCreatedAt() {

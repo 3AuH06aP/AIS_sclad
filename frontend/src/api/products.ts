@@ -6,6 +6,20 @@ export async function fetchProducts(): Promise<Product[]> {
   return response.data;
 }
 
+export async function fetchProductById(id: number): Promise<Product> {
+  const response = await api.get<Product>(`/products/${id}`);
+  return response.data;
+}
+
+export async function searchProductsSummary(query: string): Promise<Product[]> {
+  const q = query.trim();
+  if (!q) {
+    return [];
+  }
+  const response = await api.get<Product[]>('/products/search', { params: { query: q } });
+  return response.data;
+}
+
 export async function createProduct(product: Product): Promise<Product> {
   const response = await api.post<Product>('/products', product);
   return response.data;

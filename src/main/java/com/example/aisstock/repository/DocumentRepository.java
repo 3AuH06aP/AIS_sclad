@@ -12,4 +12,6 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     List<Document> findByStatus(Document.DocumentStatus status);
     List<Document> findByCreatedBy(String createdBy);
     List<Document> findByDocumentNumber(String documentNumber);
+
+    boolean existsByCreatedBy(String createdBy);
 }

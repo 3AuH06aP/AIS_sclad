@@ -1,10 +1,14 @@
 package com.example.aisstock.dto;
 
+import java.time.OffsetDateTime;
+
 public class AuthResponse {
     private Long id;
     private String username;
     private String role;
     private String token;
+    private String fullName;
+    private OffsetDateTime lastLoginAt;
 
     public AuthResponse() {
     }
@@ -45,5 +49,21 @@ public class AuthResponse {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public OffsetDateTime getLastLoginAt() {
+        return lastLoginAt;
+    }
+
+    public void setLastLoginAt(OffsetDateTime lastLoginAt) {
+        this.lastLoginAt = lastLoginAt;
     }
 }

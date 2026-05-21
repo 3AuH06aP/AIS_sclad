@@ -31,9 +31,18 @@ public class ProductController {
         return productService.findSummary();
     }
 
+    @GetMapping("/search")
+    public List<ProductSummary> search(@RequestParam("query") String query) {
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+        String q = query.trim();
+        return productService.searchSummaries(q);
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity<Product> get(@PathVariable Long id) {
-        return productService.findById(id)
+    public ResponseEntity<ProductSummary> get(@PathVariable Long id) {
+        return productService.findSummaryById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

@@ -21,3 +21,17 @@ export async function importProductsExcel(file) {
     });
     return response.data;
 }
+
+export async function fetchProductById(id) {
+    const response = await api.get(`/products/${id}`);
+    return response.data;
+}
+
+export async function searchProductsSummary(query) {
+    const q = (query || '').trim();
+    if (!q) {
+        return [];
+    }
+    const response = await api.get('/products/search', { params: { query: q } });
+    return response.data;
+}

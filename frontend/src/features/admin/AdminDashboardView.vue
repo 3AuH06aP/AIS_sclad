@@ -21,8 +21,8 @@
             <router-link to="/admin/logs" class="panel-card admin-link-card">
               <div class="card-icon logs-icon">📜</div>
               <div class="card-info">
-                <h3>Журнал событий</h3>
-                <p>Аудит действий пользователей в системе</p>
+                <h3>Журнал администратора</h3>
+                <p>Создание, сброс пароля, блокировка и удаление пользователей</p>
               </div>
             </router-link>
           </div>

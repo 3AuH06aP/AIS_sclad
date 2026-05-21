@@ -10,6 +10,8 @@ public record ProductSummary(
         String description,
         String category,
         String unit,
+        String inventoryClass,
+        String trackingMethod,
         Integer minQuantity,
         Integer quantity,
         BigDecimal purchasePrice,

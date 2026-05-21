@@ -125,9 +125,12 @@
 
 <script setup lang="ts">
 import MainLayout from '../../layouts/MainLayout.vue';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { fetchProducts, createProduct, importProductsExcel } from '../../api/products';
 import type { Product } from '../../types';
+
+const route = useRoute();
 
 const products = ref([] as Product[]);
 const filter = ref('');
@@ -172,6 +175,13 @@ const availableUnits = computed(() => {
   });
   return Array.from(units);
 });
+
+function applyRouteQuery() {
+  const q = route.query.q;
+  if (typeof q === 'string' && q) {
+    filter.value = q;
+  }
+}
 
 async function load() {
   loading.value = true;
@@ -273,7 +283,15 @@ const filteredProducts = computed(() => {
   });
 });
 
-onMounted(load);
+onMounted(() => {
+  applyRouteQuery();
+  load();
+});
+
+watch(
+  () => route.query.q,
+  () => applyRouteQuery()
+);
 </script>
 
 <style scoped>

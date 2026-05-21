@@ -25,28 +25,42 @@ public class ProductService {
     }
 
     public List<ProductSummary> findSummary() {
-        return productRepository.findAll().stream().map(product -> {
-            int quantity = stockItemRepository.findByProduct(product).stream()
-                    .mapToInt(item -> item.getQuantity() == null ? 0 : item.getQuantity())
-                    .sum();
-            return new ProductSummary(
-                    product.getId(),
-                    product.getSku(),
-                    product.getBarcode(),
-                    product.getName(),
-                    product.getDescription(),
-                    product.getCategory(),
-                    product.getUnit(),
-                    product.getMinQuantity(),
-                    quantity,
-                    product.getPurchasePrice(),
-                    product.getSalePrice()
-            );
-        }).toList();
+        return productRepository.findAll().stream().map(this::toSummary).toList();
+    }
+
+    public List<ProductSummary> searchSummaries(String query) {
+        return productRepository.searchBySkuOrNameContaining(query).stream()
+                .map(this::toSummary)
+                .toList();
     }
 
     public Optional<Product> findById(Long id) {
         return productRepository.findById(id);
+    }
+
+    public Optional<ProductSummary> findSummaryById(Long id) {
+        return productRepository.findById(id).map(this::toSummary);
+    }
+
+    private ProductSummary toSummary(Product product) {
+        int quantity = stockItemRepository.findByProduct(product).stream()
+                .mapToInt(item -> item.getQuantity() == null ? 0 : item.getQuantity())
+                .sum();
+        return new ProductSummary(
+                product.getId(),
+                product.getSku(),
+                product.getBarcode(),
+                product.getName(),
+                product.getDescription(),
+                product.getCategory(),
+                product.getUnit(),
+                product.getInventoryClass(),
+                product.getTrackingMethod(),
+                product.getMinQuantity(),
+                quantity,
+                product.getPurchasePrice(),
+                product.getSalePrice()
+        );
     }
 
     @Transactional

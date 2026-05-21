@@ -1,17 +1,23 @@
 package com.example.aisstock.dto;
 
+import java.time.OffsetDateTime;
+
 public class UserDto {
     private Long id;
     private String username;
     private String role;
+    private OffsetDateTime createdAt;
+    private boolean enabled;
 
     public UserDto() {
     }
 
-    public UserDto(Long id, String username, String role) {
+    public UserDto(Long id, String username, String role, OffsetDateTime createdAt, boolean enabled) {
         this.id = id;
         this.username = username;
         this.role = role;
+        this.createdAt = createdAt;
+        this.enabled = enabled;
     }
 
     public Long getId() {
@@ -36,5 +42,21 @@ public class UserDto {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }
