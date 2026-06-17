@@ -8,11 +8,10 @@ import org.springframework.stereotype.Component;
 
 /**
  * Hibernate ddl-auto=update не обновляет CHECK-constraint в PostgreSQL.
- * Старый volume мог содержать ограничение без роли STOREKEEPER.
  */
 @Component
 @Order(0)
-public class UsersRoleConstraintMigration implements ApplicationRunner {
+public class  UsersRoleConstraintMigration implements ApplicationRunner {
 
     private final JdbcTemplate jdbcTemplate;
 

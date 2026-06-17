@@ -89,19 +89,35 @@
           <table>
             <thead>
               <tr>
-                <th>Артикул</th>
-                <th>Штрихкод</th>
-                <th>Название</th>
-                <th>Категория</th>
-                <th>Класс</th>
-                <th>Метод</th>
-                <th>Остаток</th>
-                <th>Мин. остаток</th>
+                <th @click="toggleSort('sku')" class="sortable">
+                  Артикул <span class="sort-icon">{{ getSortIcon('sku') }}</span>
+                </th>
+                <th @click="toggleSort('barcode')" class="sortable">
+                  Штрихкод <span class="sort-icon">{{ getSortIcon('barcode') }}</span>
+                </th>
+                <th @click="toggleSort('name')" class="sortable">
+                  Название <span class="sort-icon">{{ getSortIcon('name') }}</span>
+                </th>
+                <th @click="toggleSort('category')" class="sortable">
+                  Категория <span class="sort-icon">{{ getSortIcon('category') }}</span>
+                </th>
+                <th @click="toggleSort('inventoryClass')" class="sortable">
+                  Класс <span class="sort-icon">{{ getSortIcon('inventoryClass') }}</span>
+                </th>
+                <th @click="toggleSort('trackingMethod')" class="sortable">
+                  Метод <span class="sort-icon">{{ getSortIcon('trackingMethod') }}</span>
+                </th>
+                <th @click="toggleSort('quantity')" class="sortable">
+                  Остаток <span class="sort-icon">{{ getSortIcon('quantity') }}</span>
+                </th>
+                <th @click="toggleSort('minQuantity')" class="sortable">
+                  Мин. остаток <span class="sort-icon">{{ getSortIcon('minQuantity') }}</span>
+                </th>
                 <th>Ед.</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="product in filteredProducts" :key="product.id">
+              <tr v-for="product in sortedProducts" :key="product.id">
                 <td>{{ product.sku }}</td>
                 <td>{{ product.barcode || '—' }}</td>
                 <td>{{ product.name }}</td>
@@ -139,6 +155,26 @@ const error = ref('');
 const showCreate = ref(false);
 const message = ref('');
 const fileInput = ref<HTMLInputElement | null>(null);
+
+// Sorting state
+const sortKey = ref('');
+const sortOrder = ref(0); // 0: standard, 1: asc (МкБ), -1: desc (БкМ)
+
+function toggleSort(key: string) {
+  if (sortKey.value === key) {
+    if (sortOrder.value === 0) sortOrder.value = 1;
+    else if (sortOrder.value === 1) sortOrder.value = -1;
+    else sortOrder.value = 0;
+  } else {
+    sortKey.value = key;
+    sortOrder.value = 1;
+  }
+}
+
+function getSortIcon(key: string) {
+  if (sortKey.value !== key || sortOrder.value === 0) return '↕';
+  return sortOrder.value === 1 ? '↑' : '↓';
+}
 
 const newProduct = ref<Product>({
   id: 0,
@@ -283,6 +319,32 @@ const filteredProducts = computed(() => {
   });
 });
 
+const sortedProducts = computed(() => {
+  if (sortOrder.value === 0 || !sortKey.value) {
+    return filteredProducts.value;
+  }
+
+  return [...filteredProducts.value].sort((a, b) => {
+    const valA = (a as any)[sortKey.value];
+    const valB = (b as any)[sortKey.value];
+
+    if (valA === valB) return 0;
+
+    if (typeof valA === 'number' && typeof valB === 'number') {
+      return sortOrder.value === 1 ? valA - valB : valB - valA;
+    }
+
+    const strA = String(valA || '').toLowerCase();
+    const strB = String(valB || '').toLowerCase();
+
+    if (sortOrder.value === 1) {
+      return strA.localeCompare(strB);
+    } else {
+      return strB.localeCompare(strA);
+    }
+  });
+});
+
 onMounted(() => {
   applyRouteQuery();
   load();
@@ -405,6 +467,19 @@ td {
 th {
   color: #334155;
   font-weight: 700;
+}
+th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+th.sortable:hover {
+  background: #f8fafc;
+}
+.sort-icon {
+  display: inline-block;
+  margin-left: 4px;
+  width: 12px;
+  color: #94a3b8;
 }
 .empty-state,
 .message,

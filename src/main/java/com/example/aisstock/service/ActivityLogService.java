@@ -23,11 +23,13 @@ public class ActivityLogService {
         return activityLogRepository.findAll();
     }
 
-    public List<ActivityLog> findAdminLogs(String adminUsername, LocalDate from, LocalDate to) {
-        String admin = (adminUsername != null && !adminUsername.isBlank()) ? adminUsername.trim() : null;
+    public List<ActivityLog> findFiltered(String username, String action, LocalDate from, LocalDate to) {
+        String userParam = (username != null && !username.isBlank()) ? username.trim() : null;
+        String actionParam = (action != null && !action.isBlank()) ? action.trim() : null;
         LocalDateTime fromDt = from != null ? from.atStartOfDay() : null;
         LocalDateTime toDt = to != null ? to.atTime(LocalTime.MAX) : null;
-        return activityLogRepository.findAdminLogs(admin, fromDt, toDt);
+        
+        return activityLogRepository.findLogs(userParam, actionParam, fromDt, toDt);
     }
 
     @Transactional

@@ -11,8 +11,15 @@
         <router-link to="/tasks">Задачи</router-link>
         <router-link v-if="auth.role === 'admin'" to="/admin">Администрирование</router-link>
       </nav>
+
       <div class="sidebar-footer">
-        <button class="ghost" @click="logout">Выйти</button>
+        <!-- Переключатель тем -->
+        <button class="theme-toggle" @click="toggleTheme" :title="currentTheme === 'dark' ? 'Включить светлую тему' : 'Включить стандартную тему'">
+          <span v-if="currentTheme === 'dark'">☀️ Светлая тема</span>
+          <span v-else>🌙 Темная тема</span>
+        </button>
+
+        <button class="ghost logout-btn" @click="logout">Выйти</button>
       </div>
     </aside>
     <main class="content-area">
@@ -27,16 +34,36 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 
 const auth = useAuthStore();
 const router = useRouter();
+const currentTheme = ref('dark');
+
+function toggleTheme() {
+  currentTheme.value = currentTheme.value === 'dark' ? 'light' : 'dark';
+  applyTheme();
+}
+
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', currentTheme.value);
+  localStorage.setItem('ais-stock-theme', currentTheme.value);
+}
 
 function logout() {
   auth.logout();
   router.push('/login');
 }
+
+onMounted(() => {
+  const saved = localStorage.getItem('ais-stock-theme');
+  if (saved) {
+    currentTheme.value = saved;
+  }
+  applyTheme();
+});
 </script>
 
 <style scoped>
@@ -50,20 +77,26 @@ function logout() {
   flex-direction: column;
   padding: 28px 18px;
   gap: 24px;
-  background: #0f172a;
-  color: #f8fafc;
+  background: var(--bg-sidebar);
+  color: var(--text-sidebar);
+  transition: background-color 0.3s ease;
+  border-right: 1px solid var(--border-color);
 }
 .brand {
   font-size: 1.4rem;
   font-weight: 800;
   margin-bottom: 10px;
+  color: white;
+}
+[data-theme='light'] .brand {
+  color: var(--accent-primary);
 }
 nav {
   display: grid;
   gap: 8px;
 }
 a {
-  color: #cbd5e1;
+  color: var(--text-sidebar);
   text-decoration: none;
   padding: 12px 14px;
   border-radius: 12px;
@@ -73,28 +106,64 @@ a {
 }
 a.router-link-active,
 a:hover {
-  background: #1e293b;
+  background: var(--sidebar-active);
   color: white;
 }
+[data-theme='light'] a.router-link-active,
+[data-theme='light'] a:hover {
+  color: var(--accent-primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
 .sidebar-footer {
   margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
+
+.theme-toggle {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+[data-theme='light'] .theme-toggle {
+  background: white;
+  border-color: var(--border-color);
+  color: var(--text-main);
+}
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
 button.ghost {
   width: 100%;
   padding: 12px 14px;
   background: transparent;
-  border: 1px solid #334155;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   color: #e2e8f0;
   cursor: pointer;
   font-weight: 600;
 }
-button.ghost:hover {
-  background: #1e293b;
+[data-theme='light'] button.ghost {
+  border-color: var(--border-color);
+  color: var(--text-main);
 }
+button.ghost:hover {
+  background: var(--sidebar-active);
+}
+
 .content-area {
-  background: #f8fafc;
+  background: var(--bg-app);
   padding: 32px;
+  transition: background-color 0.3s ease;
 }
 .topbar {
   margin-bottom: 24px;
@@ -102,7 +171,7 @@ button.ghost:hover {
 .page-title {
   font-size: 1.8rem;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--text-main);
 }
 .page-body {
   display: flex;
@@ -116,6 +185,8 @@ button.ghost:hover {
   .sidebar {
     flex-direction: row;
     padding: 16px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
   }
 }
 </style>

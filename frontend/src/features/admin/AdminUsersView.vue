@@ -43,16 +43,26 @@
             <table v-else class="table">
               <thead>
                 <tr>
-                  <th>ID</th>
-                  <th>Логин</th>
-                  <th>Роль</th>
-                  <th>Дата регистрации</th>
-                  <th>Активен</th>
+                  <th @click="toggleSort('id')" class="sortable">
+                    ID <span class="sort-icon">{{ getSortIcon('id') }}</span>
+                  </th>
+                  <th @click="toggleSort('username')" class="sortable">
+                    Логин <span class="sort-icon">{{ getSortIcon('username') }}</span>
+                  </th>
+                  <th @click="toggleSort('role')" class="sortable">
+                    Роль <span class="sort-icon">{{ getSortIcon('role') }}</span>
+                  </th>
+                  <th @click="toggleSort('createdAt')" class="sortable">
+                    Дата регистрации <span class="sort-icon">{{ getSortIcon('createdAt') }}</span>
+                  </th>
+                  <th @click="toggleSort('enabled')" class="sortable">
+                    Активен <span class="sort-icon">{{ getSortIcon('enabled') }}</span>
+                  </th>
                   <th>Действия</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="user in users" :key="user.id">
+                <tr v-for="user in sortedUsers" :key="user.id">
                   <td>#{{ user.id }}</td>
                   <td class="user-name">{{ user.username }}</td>
                   <td>
@@ -94,7 +104,7 @@
                 </tr>
               </tbody>
             </table>
-            <div v-if="!loading && users.length === 0" class="empty-state">Нет пользователей</div>
+            <div v-if="!loading && sortedUsers.length === 0" class="empty-state">Нет пользователей</div>
           </div>
         </section>
 
@@ -118,7 +128,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import MainLayout from '../../layouts/MainLayout.vue';
 import {
   fetchUsers,
@@ -141,6 +151,51 @@ const actionUserId = ref<number | null>(null);
 const showCreate = ref(false);
 const message = ref('');
 const error = ref('');
+
+// Sorting state
+const sortKey = ref('');
+const sortOrder = ref(0); // 0: default, 1: asc, -1: desc
+
+function toggleSort(key: string) {
+  if (sortKey.value === key) {
+    if (sortOrder.value === 0) sortOrder.value = 1;
+    else if (sortOrder.value === 1) sortOrder.value = -1;
+    else sortOrder.value = 0;
+  } else {
+    sortKey.value = key;
+    sortOrder.value = 1;
+  }
+}
+
+function getSortIcon(key: string) {
+  if (sortKey.value !== key || sortOrder.value === 0) return '↕';
+  return sortOrder.value === 1 ? '↑' : '↓';
+}
+
+const sortedUsers = computed(() => {
+  if (sortOrder.value === 0 || !sortKey.value) {
+    return users.value;
+  }
+
+  return [...users.value].sort((a, b) => {
+    const valA = (a as any)[sortKey.value];
+    const valB = (b as any)[sortKey.value];
+
+    if (valA === valB) return 0;
+
+    if (typeof valA === 'number' && typeof valB === 'number') {
+      return sortOrder.value === 1 ? valA - valB : valB - valA;
+    }
+
+    if (typeof valA === 'boolean' && typeof valB === 'boolean') {
+      return sortOrder.value === 1 ? (valA === valB ? 0 : valA ? 1 : -1) : (valA === valB ? 0 : valA ? -1 : 1);
+    }
+
+    return sortOrder.value === 1
+      ? String(valA || '').localeCompare(String(valB || ''))
+      : String(valB || '').localeCompare(String(valA || ''));
+  });
+});
 
 const form = ref({
   username: '',
@@ -343,6 +398,9 @@ th {
   border-bottom: 1px solid #e2e8f0;
   font-size: 0.85rem;
 }
+th.sortable { cursor: pointer; user-select: none; }
+th.sortable:hover { background: #f8fafc; }
+.sort-icon { display: inline-block; margin-left: 4px; width: 12px; color: #94a3b8; }
 td {
   padding: 14px;
   border-bottom: 1px solid #f1f5f9;

@@ -21,15 +21,11 @@ public class ActivityController {
     }
 
     @GetMapping
-    public List<ActivityLog> list() {
-        return activityLogService.findAll();
-    }
-
-    @GetMapping("/admin")
-    public List<ActivityLog> listAdmin(
-            @RequestParam(required = false) String admin,
+    public List<ActivityLog> list(
+            @RequestParam(required = false) String user,
+            @RequestParam(required = false) String action,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        return activityLogService.findAdminLogs(admin, from, to);
+        return activityLogService.findFiltered(user, action, from, to);
     }
 }
